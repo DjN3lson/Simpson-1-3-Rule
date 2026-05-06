@@ -8,7 +8,7 @@ import sympy as sp
 # ─────────────────────────── Estructuras de datos ───────────────────────────
 
 @dataclass
-class WeightedNode:
+class WeightedNode: # Class to store the nodes of the method
     i: int
     xi: float
     fxi: float
@@ -16,7 +16,7 @@ class WeightedNode:
 
 
 @dataclass
-class MethodSteps:
+class MethodSteps: # Class to store the steps of the method
     rule_name: str
     lagrange_order: int
     lagrange_derivation: str
@@ -29,7 +29,7 @@ class MethodSteps:
 
 
 @dataclass
-class IntegrationResult:
+class IntegrationResult: # Class to store the result of the integration
     method: str
     rule: str
     steps: MethodSteps
@@ -79,9 +79,10 @@ def _composite_simpson(fn: callable, a: float, b: float, n: int) -> tuple[float,
     if n < 2:
         raise ValueError("Para Simpson 1/3 compuesto, n debe ser >= 2.")
 
-    h = (b - a) / n
+    h = (b - a) / n #para todas las particiones. Libro lo hace solo para cierto caso, h = x2-x1 = x1-x0
     nodes: list[WeightedNode] = []
 
+    #1: primer y ultimo punto (nodo), 4: puntos impares, 2: puntos pares
     for i in range(n + 1):
         xi = a + i * h
         fxi = float(fn(xi))
@@ -91,9 +92,9 @@ def _composite_simpson(fn: callable, a: float, b: float, n: int) -> tuple[float,
             weight = 4.0
         else:
             weight = 2.0
-        nodes.append(WeightedNode(i=i, xi=xi, fxi=fxi, weight=weight))
+        nodes.append(WeightedNode(i=i, xi=xi, fxi=fxi, weight=weight)) 
 
-    weighted_sum = sum(nd.weight * nd.fxi for nd in nodes)
+    weighted_sum = sum(nd.weight * nd.fxi for nd in nodes) #Sumatoria de pesos * f(xi)
     result = (h / 3.0) * weighted_sum
 
     formula_text = (
@@ -130,7 +131,7 @@ def _composite_simpson(fn: callable, a: float, b: float, n: int) -> tuple[float,
 
 
 # ──────────────────────── Derivada máxima en [a,b] ──────────────────────────
-
+#Estima el máximo de |f''''(x)| en [a, b], necesario para la cota de Lagrange:
 def _max_abs_derivative(variable: sp.Symbol, expr: sp.Expr, order: int, a: float, b: float) -> float | None:
     derivative_expr = sp.diff(expr, variable, order)
     derivative_fn = sp.lambdify(variable, derivative_expr, modules=["mpmath", "math"])
@@ -152,7 +153,7 @@ def _max_abs_derivative(variable: sp.Symbol, expr: sp.Expr, order: int, a: float
 
 
 # ──────────────────────────── API pública ───────────────────────────────────
-
+#función que llama main.py. Orquesta todo el proceso
 def integrate_simpson(
     function_text: str,
     a: float,
