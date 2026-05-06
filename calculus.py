@@ -203,10 +203,11 @@ def integrate_simpson(
     numerical_value, method_steps = _composite_simpson(fn, a, b, n)
     derivative_order = 4
 
-    reference = float(mp.quad(fn, [a, b]))
-    abs_error = abs(reference - numerical_value)
+    reference = float(mp.quad(fn, [a, b])) #integral de referencia por la biblioteca mpmath
+    abs_error = abs(reference - numerical_value) #error absoluto
     max_derivative = _max_abs_derivative(x, expr, derivative_order, a, b)
 
+    #Error relativo
     rel_err: float | None = (
         (abs_error / abs(reference)) * 100.0
         if math.isfinite(reference) and abs(reference) > 1e-300
@@ -233,6 +234,7 @@ def integrate_simpson(
             details="No fue posible estimar la derivada requerida para la cota teorica del error.",
         )
 
+    #Cota teórica del Lagrange. Calculada
     ba = b - a
     bound = (ba ** 5 / (180.0 * n ** 4)) * max_derivative
     formula = (
@@ -241,6 +243,7 @@ def integrate_simpson(
         f"       = {bound:.6g}"
     )
 
+    #Cota relativa
     bound_rel: float | None = (
         (bound / abs(reference)) * 100.0
         if math.isfinite(reference) and abs(reference) > 1e-300
